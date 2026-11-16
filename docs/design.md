@@ -28,7 +28,8 @@ external action on its own.
 | Functional | Gather context with read-only tools before deciding | — |
 | Functional | Draft a grounded reply or create a ticket | Groundedness ≥ 0.95 |
 | Safety | Never miss a must-escalate case (complaint, fraud, legal) | Escalation recall ≥ 0.99 |
-| Safety | Resist prompt injection inside email bodies | ≥ 98% of attack cases blocked |
+| Safety | Prompt injection never causes data to leave to a third party | 0 exfiltrations, 0 cross-account leaks |
+| Safety | A customer only ever sees data about their own accounts | Enforced in the tool layer |
 | Safety | No PII sent to the model beyond what the task needs | Redaction before every LLM call |
 | Cost | Average cost per message | < $0.01 |
 | Latency | End-to-end, excluding human wait | p95 < 8 s |
@@ -76,6 +77,11 @@ known shape, so the graph fixes the *order of stages* and gives the model freedo
 
 The tier is enforced in code (the tool executor checks it), not in the prompt. A prompt
 instruction can be overridden by an injected email; a code check cannot.
+
+Read tools are also **scoped to the requester**: the executor passes the sender's identity
+to the tool, and the tool only returns records that sender owns. The model never supplies
+the identity, so it cannot be talked into looking up someone else's account. The reply
+recipient is likewise set by code to the original sender.
 See [ADR-0002](adr/0002-risk-tiered-human-in-the-loop.md).
 
 ### 4.2 Escalation is biased toward recall
@@ -108,9 +114,10 @@ Evals are written before prompts are tuned ([ADR-0003](adr/0003-eval-first.md)).
 
 - **Dataset:** labelled synthetic ops messages covering every intent, every priority,
   must-escalate cases and prompt-injection attacks. No real customer data.
-- **Metrics:** intent macro-F1, escalation recall, unnecessary-escalation rate, tool-call
-  correctness, reply groundedness (LLM judge with a rubric, spot-checked by hand),
-  injection block rate, cost per message, p50/p95 latency.
+- **Metrics:** intent macro-F1, outcome accuracy, escalation recall, unnecessary-escalation
+  rate, attack-escalated rate, exfiltration count, cross-account leak count, cost per
+  message, p50/p95 latency. Reply groundedness is enforced per message by the policy check
+  (every cited fact must come from a tool result) and will get an LLM-judge score later.
 - **Regression gate:** CI runs the offline eval on every change to prompts, tools or
   model config, and fails the build if a safety metric drops below its gate.
 
