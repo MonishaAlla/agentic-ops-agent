@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ops-agent"
+version = "0.1.0"
+description = "Human-in-the-loop operations triage agent built with LangGraph"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Monisha Alla" }]
+dependencies = ["pydantic>=2.6"]
+
+[project.optional-dependencies]
+graph = ["langgraph>=0.2.60"]
+openai = ["openai>=1.40"]
+bedrock = ["boto3>=1.34"]
+dev = ["pytest>=8"]
+all = ["ops-agent[graph,openai,bedrock,dev]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
