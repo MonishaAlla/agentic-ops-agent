@@ -1,5 +1,7 @@
 # agentic-ops-agent
 
+[![ci](https://github.com/MonishaAlla/agentic-ops-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/MonishaAlla/agentic-ops-agent/actions/workflows/ci.yml)
+
 A human-in-the-loop operations triage agent for financial-services inboxes, built with
 LangGraph. It classifies inbound messages, gathers context with read-only tools, drafts
 grounded replies or raises tickets, and routes anything risky to a human. Nothing
